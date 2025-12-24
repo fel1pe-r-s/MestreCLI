@@ -21,6 +21,7 @@ type Model struct {
 	Framework   string // fastify, nestjs
 	ORM         string // prisma, drizzle, none
 	Database    string // postgres, sqlite, mongo
+	ApiPattern  string // standard, hono
 	UseDocker   bool
 	UseTurbo    bool
 
@@ -35,14 +36,15 @@ func InitialModel() Model {
 	ti.Width = 30
 
 	return Model{
-		choices:   []string{"Backend API (Clean Arch)", "Universal App (Web/Mobile/Desktop)", "Monorepo Genérico"},
-		selected:  -1,
-		Step:      0,
-		textInput: ti,
-		Runtime:   "node",
-		Framework: "fastify",
-		ORM:       "prisma",
-		Database:  "postgres",
+		choices:    []string{"Backend API (Clean Arch)", "Universal App (Monorepo Next.js)", "Monorepo Genérico", "Frontend SPA (Vite)", "Fullstack (Next.js Standalone)"},
+		selected:   -1,
+		Step:       0,
+		textInput:  ti,
+		Runtime:    "node",
+		Framework:  "fastify",
+		ORM:        "prisma",
+		Database:   "postgres",
+		ApiPattern: "standard",
 	}
 }
 
@@ -54,6 +56,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	isBackend := strings.Contains(m.ProjectType, "Backend")
+	isFullstack := strings.Contains(m.ProjectType, "Fullstack")
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -82,6 +85,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.cursor > 0 {
 					m.cursor--
 				}
+			} else if m.Step == 8 && isFullstack { // API Pattern
+				if m.cursor > 0 {
+					m.cursor--
+				}
 			}
 
 		case "down", "j":
@@ -103,6 +110,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			} else if m.Step == 5 && isBackend { // Database (3)
 				if m.cursor < 2 {
+					m.cursor++
+				}
+			} else if m.Step == 8 && isFullstack { // API Pattern
+				if m.cursor < 1 {
 					m.cursor++
 				}
 			}
@@ -133,8 +144,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// BRANCHING LOGIC
 				if strings.Contains(m.ProjectType, "Backend") {
 					m.Step = 3 // -> Framework
+				} else if strings.Contains(m.ProjectType, "Fullstack") {
+					m.Step = 8 // -> API Pattern
 				} else {
-					m.Step = 6 // -> Docker (Skip Framework/ORM/DB)
+					m.Step = 6 // -> Docker (Universal, Monorepo, Frontend)
 				}
 				m.cursor = 0
 				return m, nil
@@ -171,6 +184,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.Step = 6 // -> Docker
 				return m, nil
+
+			} else if m.Step == 8 { // Select API Pattern
+				if m.cursor == 0 {
+					m.ApiPattern = "standard"
+				} else {
+					m.ApiPattern = "hono"
+				}
+				m.Step = 6 // -> Docker
+				return m, nil
 			}
 
 		case "y", "Y":
@@ -180,7 +202,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if strings.Contains(m.ProjectType, "Universal") || strings.Contains(m.ProjectType, "Monorepo") {
 					m.Step = 7 // -> Turbo
 				} else {
-					return m, tea.Quit // Done for Backend
+					return m, tea.Quit // Done for Backend, Frontend, Fullstack
 				}
 				return m, nil
 			}
@@ -215,7 +237,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	s := "🧙‍♂️ Mestre Stack Wizard V2\n\n"
+	s := "🧙‍♂️ Mestre Stack Wizard V3\n\n"
 
 	// Helper to render choices
 	renderChoices := func(options []string) string {
@@ -226,7 +248,6 @@ func (m Model) View() string {
 				cursor = ">"
 			}
 			out += fmt.Sprintf("%s [ ] %s\n", cursor, opt)
-			// checked logic omitted for simplicity since we move on enter
 		}
 		return out
 	}
@@ -254,10 +275,12 @@ func (m Model) View() string {
 		s += "5. ORM (Banco de Dados):\n\n" + renderChoices([]string{"Prisma (Recomendado)", "Drizzle (Leve)", "Nenhum"})
 	case 5:
 		s += "6. Banco de Dados:\n\n" + renderChoices([]string{"PostgreSQL", "SQLite", "MongoDB"})
+	case 8:
+		s += "4. Padrão de API (Next.js):\n\n" + renderChoices([]string{"Standard (API Routes)", "Hono (Edge Optimized)"})
 	case 6:
-		s += "7. Configurar Docker/Compose? (y/n)\n"
+		s += "Configurar Docker/Compose? (y/n)\n"
 	case 7:
-		s += "8. Configurar TurboRepo? (y/n)\n"
+		s += "Configurar TurboRepo? (y/n)\n"
 	}
 
 	s += "\n(Enter para confirmar, Ctrl+C para sair)\n"

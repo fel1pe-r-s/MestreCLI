@@ -63,6 +63,39 @@ func TestMatrixGenerator(t *testing.T) {
 			},
 		},
 		{
+			name:  "Frontend_Vite_React",
+			pType: "Frontend SPA",
+			config: scaffold.ProjectConfig{
+				Name: "test-frontend-vite", Runtime: "node", UseDocker: true,
+			},
+			checks: func(t *testing.T, dir string) {
+				assertFileExists(t, dir, "vite.config.ts")
+				assertFileExists(t, dir, "src/App.tsx")
+				assertFileExists(t, dir, "Dockerfile") // Nginx
+
+				content, _ := os.ReadFile(filepath.Join(dir, "Dockerfile"))
+				if !strings.Contains(string(content), "nginx") {
+					t.Errorf("Frontend Dockerfile should use Nginx")
+				}
+			},
+		},
+		{
+			name:  "Fullstack_Next_Hono",
+			pType: "Fullstack (Next.js)",
+			config: scaffold.ProjectConfig{
+				Name: "test-next-hono", Runtime: "node", ApiPattern: "hono", UseDocker: true,
+			},
+			checks: func(t *testing.T, dir string) {
+				assertFileExists(t, dir, "app/page.tsx")                  // Next.js
+				assertFileExists(t, dir, "app/api/[[...route]]/route.ts") // Hono Adapter
+
+				content, _ := os.ReadFile(filepath.Join(dir, "app/api/[[...route]]/route.ts"))
+				if !strings.Contains(string(content), "Hono") {
+					t.Errorf("API Route should contain Hono")
+				}
+			},
+		},
+		{
 			name:  "Universal_Turbo",
 			pType: "Universal App (Web/Mobile/Desktop)",
 			config: scaffold.ProjectConfig{

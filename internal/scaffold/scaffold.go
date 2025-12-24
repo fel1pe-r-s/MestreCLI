@@ -14,13 +14,14 @@ import (
 var templatesFS embed.FS
 
 type ProjectConfig struct {
-	Name      string
-	Runtime   string
-	Framework string
-	ORM       string
-	Database  string
-	UseDocker bool
-	UseTurbo  bool
+	Name       string
+	Runtime    string
+	Framework  string
+	ORM        string
+	Database   string
+	ApiPattern string
+	UseDocker  bool
+	UseTurbo   bool
 }
 
 func CreateProject(projectType string, config ProjectConfig) {
@@ -36,6 +37,10 @@ func CreateProject(projectType string, config ProjectConfig) {
 		}
 	} else if strings.Contains(projectType, "Universal") {
 		itemsPath = "templates/universal"
+	} else if strings.Contains(projectType, "Frontend") {
+		itemsPath = "templates/frontend-vite"
+	} else if strings.Contains(projectType, "Fullstack") {
+		itemsPath = "templates/fullstack-next"
 	} else {
 		itemsPath = "templates/monorepo"
 	}
@@ -104,6 +109,13 @@ func CreateProject(projectType string, config ProjectConfig) {
 		fmt.Printf("⚠️ Erro nos addons: %v\n", err)
 	}
 
+	// Apply Hono if selected
+	if config.ApiPattern == "hono" {
+		if err := addons.SetupHono(config.Name); err != nil {
+			fmt.Printf("⚠️ Erro ao configurar Hono: %v\n", err)
+		}
+	}
+
 	fmt.Println("\n✅ Projeto criado com sucesso!")
 	fmt.Println("\n🏁 Próximos Passos:")
 	fmt.Println("------------------------------------------------")
@@ -150,7 +162,10 @@ func CreateProject(projectType string, config ProjectConfig) {
 	runCmd := "dev"
 	if config.Framework == "nestjs" {
 		runCmd = "start:dev"
+	} else if strings.Contains(projectType, "Backend") && config.Framework == "fastify" && config.Runtime == "node" {
+		runCmd = "dev" // "tsx watch"
 	}
+
 	fmt.Printf("🚀 Rodar o projeto:\n    %s run %s\n", cmd, runCmd)
 
 	fmt.Println("------------------------------------------------")

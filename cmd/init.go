@@ -25,13 +25,14 @@ var initCmd = &cobra.Command{
 		}
 
 		config := scaffold.ProjectConfig{
-			Name:      model.ProjectName,
-			Runtime:   model.Runtime,
-			Framework: model.Framework,
-			ORM:       model.ORM,
-			Database:  model.Database,
-			UseDocker: model.UseDocker,
-			UseTurbo:  model.UseTurbo,
+			Name:       model.ProjectName,
+			Runtime:    model.Runtime,
+			Framework:  model.Framework,
+			ORM:        model.ORM,
+			Database:   model.Database,
+			ApiPattern: model.ApiPattern,
+			UseDocker:  model.UseDocker,
+			UseTurbo:   model.UseTurbo,
 		}
 
 		scaffold.CreateProject(model.ProjectType, config)
