@@ -15,6 +15,9 @@ var templatesFS embed.FS
 type ProjectConfig struct {
 	Name      string
 	Runtime   string
+	Framework string
+	ORM       string
+	Database  string
 	UseDocker bool
 	UseTurbo  bool
 }
@@ -67,18 +70,13 @@ func CreateProject(projectType string, config ProjectConfig) {
 
 		// If it's a template file (e.g. package.json), we might want to render variables
 		if strings.HasSuffix(targetPath, "package.json") {
-			// Simple string replacement for now to support Project Name
-			sContent := string(content)
-			sContent = strings.ReplaceAll(sContent, "mestrejs-backend-template", config.Name)
-			sContent = strings.ReplaceAll(sContent, "mestrejs-universal", config.Name)
-			sContent = strings.ReplaceAll(sContent, "mestrejs-monorepo", config.Name)
-
-			if config.Runtime == "bun" {
-				sContent = strings.ReplaceAll(sContent, "tsx watch", "bun --watch")
-				sContent = strings.ReplaceAll(sContent, "npm", "bun")
-				// Pnpm removal or adjustment could happen here if strictly using Bun
+			// New Smart Patcher
+			newContent, err := PatchPackageJSON(content, config)
+			if err != nil {
+				fmt.Printf("⚠️ Erro ao patchear package.json: %v\n", err)
+				return os.WriteFile(targetPath, content, 0644) // Fallback to original
 			}
-			return os.WriteFile(targetPath, []byte(sContent), 0644)
+			return os.WriteFile(targetPath, newContent, 0644)
 		}
 
 		return os.WriteFile(targetPath, content, 0644)

@@ -27,6 +27,9 @@ var initCmd = &cobra.Command{
 		config := scaffold.ProjectConfig{
 			Name:      model.ProjectName,
 			Runtime:   model.Runtime,
+			Framework: model.Framework,
+			ORM:       model.ORM,
+			Database:  model.Database,
 			UseDocker: model.UseDocker,
 			UseTurbo:  model.UseTurbo,
 		}
