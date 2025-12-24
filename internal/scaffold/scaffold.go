@@ -47,6 +47,14 @@ func CreateProject(projectType string, config ProjectConfig) {
 		relPath, _ := filepath.Rel(itemsPath, path)
 		targetPath := filepath.Join(config.Name, relPath)
 
+		// 🟢 Docker Skip Logic
+		if !config.UseDocker {
+			fname := filepath.Base(path)
+			if fname == "Dockerfile" || fname == "compose.yaml" || fname == "docker-compose.yml" || fname == "compose.yml" {
+				return nil // Skip this file
+			}
+		}
+
 		if d.IsDir() {
 			return os.MkdirAll(targetPath, 0755)
 		}
@@ -58,14 +66,17 @@ func CreateProject(projectType string, config ProjectConfig) {
 		}
 
 		// If it's a template file (e.g. package.json), we might want to render variables
-		// For now, let's just copy everything. Advanced interpolation can be added.
 		if strings.HasSuffix(targetPath, "package.json") {
 			// Simple string replacement for now to support Project Name
 			sContent := string(content)
 			sContent = strings.ReplaceAll(sContent, "mestrejs-backend-template", config.Name)
+			sContent = strings.ReplaceAll(sContent, "mestrejs-universal", config.Name)
+			sContent = strings.ReplaceAll(sContent, "mestrejs-monorepo", config.Name)
+
 			if config.Runtime == "bun" {
 				sContent = strings.ReplaceAll(sContent, "tsx watch", "bun --watch")
 				sContent = strings.ReplaceAll(sContent, "npm", "bun")
+				// Pnpm removal or adjustment could happen here if strictly using Bun
 			}
 			return os.WriteFile(targetPath, []byte(sContent), 0644)
 		}
@@ -76,19 +87,6 @@ func CreateProject(projectType string, config ProjectConfig) {
 	if err != nil {
 		fmt.Printf("❌ Erro na geração: %v\n", err)
 		return
-	}
-
-	// 4. Create Optional Files (Docker)
-	if config.UseDocker {
-		dockerContent := `version: '3.8'
-services:
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-`
-		os.WriteFile(filepath.Join(config.Name, "compose.yaml"), []byte(dockerContent), 0644)
-		fmt.Println("🐳 Docker Compose criado.")
 	}
 
 	fmt.Println("\n✅ Projeto criado com sucesso!")
