@@ -105,10 +105,53 @@ func CreateProject(projectType string, config ProjectConfig) {
 	}
 
 	fmt.Println("\n✅ Projeto criado com sucesso!")
-	fmt.Printf("👉 cd %s\n", config.Name)
+	fmt.Println("\n🏁 Próximos Passos:")
+	fmt.Println("------------------------------------------------")
+
+	// 1. Enter
+	fmt.Printf("1️⃣  Entrar na pasta:\n    cd %s\n\n", config.Name)
+
+	// 2. Install
+	cmd := "pnpm"
 	if config.Runtime == "bun" {
-		fmt.Println("👉 bun install")
-	} else {
-		fmt.Println("👉 pnpm install")
+		cmd = "bun"
 	}
+	fmt.Printf("2️⃣  Instalar dependências:\n    %s install\n\n", cmd)
+
+	// 3. Database
+	if config.ORM == "prisma" {
+		run := "npx"
+		if config.Runtime == "bun" {
+			run = "bunx"
+		}
+		fmt.Printf("3️⃣  Configurar Banco (Prisma):\n    %s prisma generate\n    %s prisma migrate dev\n\n", run, run)
+	} else if config.ORM == "drizzle" {
+		run := "npx"
+		if config.Runtime == "bun" {
+			run = "bunx"
+		}
+		cmdArg := "generate"
+		if config.Database == "postgres" {
+			cmdArg += ":pg"
+		} else if config.Database == "mysql" {
+			cmdArg += ":mysql"
+		} else {
+			cmdArg += ":sqlite"
+		}
+		fmt.Printf("3️⃣  Configurar Banco (Drizzle):\n    %s drizzle-kit %s\n\n", run, cmdArg)
+	}
+
+	// 4. Docker
+	if config.UseDocker {
+		fmt.Printf("🐳 Configurar Container:\n    docker compose up -d\n\n")
+	}
+
+	// 5. Run
+	runCmd := "dev"
+	if config.Framework == "nestjs" {
+		runCmd = "start:dev"
+	}
+	fmt.Printf("🚀 Rodar o projeto:\n    %s run %s\n", cmd, runCmd)
+
+	fmt.Println("------------------------------------------------")
 }
