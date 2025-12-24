@@ -21,13 +21,13 @@ func CreateProject(projectType string, projectName string) {
 		templateRepo = "MestreJS_Monorepo"
 	}
 
-	// Executing Real Git Clone
-	repoURL := "https://github.com/fel1pe-r-s/" + templateRepo + ".git"
-	fmt.Printf("📋 Clonando de: %s\n", repoURL)
+	// Uses 'gh' to respect user's auth (SSH or HTTPS) automatically
+	repoID := "fel1pe-r-s/" + templateRepo
+	fmt.Printf("📋 Clonando template: %s\n", repoID)
 
-	cmd := exec.Command("git", "clone", repoURL, projectName)
+	cmd := exec.Command("gh", "repo", "clone", repoID, projectName)
 	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr // Show git progress
+	cmd.Stderr = os.Stderr
 	err := cmd.Run()
 
 	if err != nil {
