@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
+	"mestre/internal/scaffold/addons"
 	"os"
 	"path/filepath"
 	"strings"
@@ -85,6 +86,18 @@ func CreateProject(projectType string, config ProjectConfig) {
 	if err != nil {
 		fmt.Printf("❌ Erro na geração: %v\n", err)
 		return
+	}
+
+	// 5. Apply Addons (Prisma, Github, etc)
+	addonConfig := addons.AddonConfig{
+		ProjectName: config.Name,
+		Framework:   config.Framework,
+		ORM:         config.ORM,
+		Database:    config.Database,
+		Runtime:     config.Runtime,
+	}
+	if err := addons.ApplyAddons(config.Name, addonConfig); err != nil {
+		fmt.Printf("⚠️ Erro nos addons: %v\n", err)
 	}
 
 	fmt.Println("\n✅ Projeto criado com sucesso!")
