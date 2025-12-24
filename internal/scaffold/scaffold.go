@@ -29,7 +29,11 @@ func CreateProject(projectType string, config ProjectConfig) {
 	// 1. Determine base path in embedded FS
 	var itemsPath string
 	if strings.Contains(projectType, "Backend") {
-		itemsPath = "templates/backend"
+		if config.Framework == "nestjs" {
+			itemsPath = "templates/backend-nest"
+		} else {
+			itemsPath = "templates/backend"
+		}
 	} else if strings.Contains(projectType, "Universal") {
 		itemsPath = "templates/universal"
 	} else {

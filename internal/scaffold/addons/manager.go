@@ -21,6 +21,10 @@ func ApplyAddons(rootPath string, config AddonConfig) error {
 		if err := SetupPrisma(rootPath, config); err != nil {
 			return err
 		}
+	} else if config.ORM == "drizzle" {
+		if err := SetupDrizzle(rootPath, config); err != nil {
+			return err
+		}
 	}
 
 	if err := SetupGithubActions(rootPath, config); err != nil {
