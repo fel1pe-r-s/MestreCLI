@@ -21,20 +21,22 @@ func CreateProject(projectType string, projectName string) {
 		templateRepo = "MestreJS_Monorepo"
 	}
 
-	// Getting the absolute path of templates (Simulated for this environment)
-	// In a real CLI, we would use 'git clone https://github.com/fel1pe-r-s/...'
-	// For now, let's assume we are cloning from the local Templates folder for speed, or GitHub if remote.
+	// Executing Real Git Clone
+	repoURL := "https://github.com/fel1pe-r-s/" + templateRepo + ".git"
+	fmt.Printf("📋 Clonando de: %s\n", repoURL)
 
-	// Simulating the Action of Cloning
-	fmt.Printf("📋 Clonando template %s...\n", templateRepo)
-
-	// Command to simulate clone/copy
-	// In production: git clone https://github.com/fel1pe-r-s/<templateRepo> <projectName>
-	cmd := exec.Command("echo", "git clone", "https://github.com/fel1pe-r-s/"+templateRepo, projectName)
+	cmd := exec.Command("git", "clone", repoURL, projectName)
 	cmd.Stdout = os.Stdout
-	cmd.Run()
+	cmd.Stderr = os.Stderr // Show git progress
+	err := cmd.Run()
+
+	if err != nil {
+		fmt.Printf("❌ Erro ao clonar: %v\n", err)
+		return
+	}
 
 	fmt.Println("✅ Projeto criado com sucesso!")
 	fmt.Println("👉 cd", projectName)
 	fmt.Println("👉 pnpm install")
+	fmt.Println("👉 mestre list (em breve)")
 }

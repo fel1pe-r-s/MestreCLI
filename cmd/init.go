@@ -20,12 +20,11 @@ var initCmd = &cobra.Command{
 		}
 
 		if model.ProjectType == "" {
-			fmt.Println("Nenhum projeto selecionado.")
+			fmt.Println("Operação cancelada.")
 			return
 		}
 
-		// Hardcoded project name for demo purposes, in real app we ask via Input in BubbleTea
-		scaffold.CreateProject(model.ProjectType, "meu-novo-projeto")
+		scaffold.CreateProject(model.ProjectType, model.ProjectName)
 	},
 }
 
