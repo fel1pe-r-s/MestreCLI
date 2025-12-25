@@ -77,11 +77,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.cursor > 0 {
 					m.cursor--
 				}
-			} else if m.Step == 4 && isBackend { // ORM
+			} else if m.Step == 4 { // ORM (Backend, Frontend, Fullstack)
 				if m.cursor > 0 {
 					m.cursor--
 				}
-			} else if m.Step == 5 && isBackend { // Database
+			} else if m.Step == 5 { // Database (Backend, Frontend, Fullstack)
 				if m.cursor > 0 {
 					m.cursor--
 				}
@@ -104,11 +104,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.cursor < 1 {
 					m.cursor++
 				}
-			} else if m.Step == 4 && isBackend { // ORM (3)
+			} else if m.Step == 4 { // ORM (3)
 				if m.cursor < 2 {
 					m.cursor++
 				}
-			} else if m.Step == 5 && isBackend { // Database (3)
+			} else if m.Step == 5 { // Database (3)
 				if m.cursor < 2 {
 					m.cursor++
 				}
@@ -144,10 +144,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// BRANCHING LOGIC
 				if strings.Contains(m.ProjectType, "Backend") {
 					m.Step = 3 // -> Framework
-				} else if strings.Contains(m.ProjectType, "Fullstack") {
-					m.Step = 8 // -> API Pattern
+				} else if strings.Contains(m.ProjectType, "Fullstack") || strings.Contains(m.ProjectType, "Frontend") {
+					m.Step = 4 // -> ORM (Frontend/Fullstack need DB too)
 				} else {
-					m.Step = 6 // -> Docker (Universal, Monorepo, Frontend)
+					m.Step = 6 // -> Docker (Universal, Monorepo)
 				}
 				m.cursor = 0
 				return m, nil
@@ -170,7 +170,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.ORM = "none"
 				}
-				m.Step = 5 // -> DB
+				// Skip DB if ORM is none
+				if m.ORM == "none" {
+					if strings.Contains(m.ProjectType, "Fullstack") {
+						m.Step = 8 // -> API Pattern
+					} else {
+						m.Step = 6 // -> Docker
+					}
+				} else {
+					m.Step = 5 // -> DB
+				}
 				m.cursor = 0
 				return m, nil
 
